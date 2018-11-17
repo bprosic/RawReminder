@@ -40,22 +40,19 @@ namespace RawReminder
         #endregion
 
         #region Send new Task to Task Factory
-        public void Produce(List<Reminders> reminder)
+        public void Produce(DateTime dateWhen, string message, int reminderId)
         {
-            ExecutionTask = Task.Factory.StartNew(() => RunSched(reminder), CancelToken);
+            // here are all reminders in list
+            //ExecutionTask = Task.Factory.StartNew(() => RunSched(reminder), CancelToken);
+            ExecutionTask = Task.Factory.StartNew(() => RunSched(dateWhen, message, reminderId), CancelToken);
             IsTaskAborted = false;
+            
         }
         #endregion
 
-        #region Run action -> schedule next reminder, delete reminder from db after showing to user
-        public void RunSched(List<Reminders> reminder)
+        #region Run scheduler
+        public void RunSched(DateTime dateWhen, string message, int reminderId)
         {
-            if (reminder.Count == 0)
-                return;
-
-            var dateWhen = reminder.FirstOrDefault().DateToRemind;
-            var txtToRmnd = reminder.FirstOrDefault().ReminderContent;
-
             // calculate time when to remind and run waitable time based upon diff variable
             long diff = 0;
             if (dateWhen < DateTime.Now)
@@ -63,14 +60,14 @@ namespace RawReminder
 
             if (dateWhen > DateTime.Now)
                 diff = Convert.ToInt64((dateWhen - DateTime.Now).TotalSeconds);
-
             // using Waitable Timer class from Jim Mischel
+
             // https://stackoverflow.com/questions/18611226/c-how-to-start-a-thread-at-a-specific-time		
             // http://www.mischel.com/pubs/waitabletimer.zip
 
             WaitTimer = new WaitableTimer(true, TimeSpan.FromSeconds(diff), 0);
             WaitTimerList.Add(WaitTimer);
-
+            Console.WriteLine("here: " + dateWhen + " " + message);
             while (!CancelToken.IsCancellationRequested)
             {
                 try
@@ -80,15 +77,16 @@ namespace RawReminder
                     // timer here is waiting ...
                     WaitTimer.WaitOne();
                     // When time is over, execute that reminder, show reminder to a user: 
-                    MessageWindow ms = new MessageWindow(txtToRmnd + " => for date: " + dateWhen);
-                    HelpFunctions.log.Info(txtToRmnd + ". Reminder shown to the user on thread: " + Thread.CurrentThread.GetHashCode());
+
+                    MessageWindow ms = new MessageWindow(message + " => for date: " + dateWhen);
+                    HelpFunctions.log.Info(message + ". Reminder shown to the user on thread: " + Thread.CurrentThread.GetHashCode());
                     // Delete/Move reminder from reminder -> to history table
-                    DbOperations.MoveDataFromRemindersToHistory(reminder.FirstOrDefault().ReminderId);
+                    DbOperations.MoveDataFromRemindersToHistory(reminderId);
                 }
                 catch (OperationCanceledException e)
                 {
                     // I will supress exception because a lot of errors are shown in console..
-                    // HelpFunctions.log.Info(e);
+                    HelpFunctions.log.Info(e);
                     // break;
                 }
                 finally
@@ -97,7 +95,7 @@ namespace RawReminder
                     DisposeTask(true);
                 }
             }
-        }
+        } 
         #endregion
 
         #region Dispose current task
@@ -138,8 +136,10 @@ namespace RawReminder
         {
             try
             {
+                // If there are no active tasks, then exit this method
+                if (WaitTimerList.Count == 0)
+                    return;
                 // If I want to cancel a task, there is no way until first cancel a timer.
-
                 // Cancel first the timer
                 foreach (var time in WaitTimerList)
                 {

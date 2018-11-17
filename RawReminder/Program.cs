@@ -17,7 +17,7 @@ namespace RawReminder
         /// <param name="args"></param>
         // thread init EF
         static Thread threadInitDbInitEF;
-        // thread for rmeinder tasks
+        // thread for reminder tasks
         static Thread threadControlReminders;
         static DbOperations db;
         // check if EF init is finished
@@ -170,6 +170,7 @@ namespace RawReminder
             // Thats why I have put it right here, and false variable is just to not show the result to the user.
             // There are better methods than this, but I couldn't find
             DbOperations.ShowAllReminders(false);
+            // (x >> 2);
             isThreadInitDbFinished = true;
         }
         #endregion
@@ -185,12 +186,29 @@ namespace RawReminder
                 if (isThreadInitDbFinished)
                     break;
             }
+            // TODO: first cleanup RemindersTable
+            CleanRemindersTable();
             // continue
             StartAllTasks();
-            // TODO: cleanup
             // TODO: remove a reminder when it is finished
 
 
+        }
+        #endregion
+
+        #region Remove entries in Reminder Table that are expired
+        static void CleanRemindersTable()
+        {
+            // store every reminder to list
+            var reminderExamples = DbOperations.AllRemindersToList();
+            foreach (var item in reminderExamples)
+            {
+                long diff = 0;
+                if (item.DateToRemind < DateTime.Now)
+                {
+                    DbOperations.DeleteReminderById(item.ReminderId);
+                }
+            }
         }
         #endregion
 
@@ -244,7 +262,7 @@ namespace RawReminder
             } while (exitFromLoop == 1);
             if (textToRemind.ToLower().Equals("null"))
             {
-                // exit set
+                // reset variable
                 textToRemind = string.Empty;
             }
             else
@@ -280,15 +298,18 @@ namespace RawReminder
             // store every reminder to list
             var reminderExamples = DbOperations.AllRemindersToList();
 
-            // Then execute those reminders
+            // Then execute those reminders from list
             if (reminderExamples.Count != 0)
             {
-                qt = new QueueTask();
-                qt.Produce(reminderExamples);
+                foreach (var item in reminderExamples)
+                {
+                    qt = new QueueTask();
+                    qt.Produce(item.DateToRemind, item.ReminderContent, item.ReminderId);
+                }
             }
         }
         #endregion
-        
+
         #region Restart all tasks in threadpool
         static void RestartAllTasks()
         {
