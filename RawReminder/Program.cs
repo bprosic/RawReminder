@@ -171,7 +171,6 @@ namespace RawReminder
             // Thats why I have put it right here, and false variable is just to not show the result to the user.
             // There are better methods than this, but I couldn't find
             DbOperations.ShowAllReminders(false);
-            // (x >> 2);
             isThreadInitDbFinished = true;
         }
         #endregion
@@ -191,7 +190,7 @@ namespace RawReminder
             CleanRemindersTable();
             // continue
             StartAllTasks();
-            // TODO: remove a reminder when it is finished
+            
 
 
         }
@@ -311,7 +310,9 @@ namespace RawReminder
         #region Restart all tasks in threadpool
         static void RestartAllTasks()
         {
-            qt.StopAllTasks();
+            if (qt != null)
+                qt.StopAllTasks();
+
             Thread.Sleep(100);
             StartAllTasks();
         }

@@ -79,9 +79,10 @@ namespace RawReminder
                     // When time is over, execute that reminder, show reminder to a user: 
 
                     MessageWindow ms = new MessageWindow(message + " => for date: " + dateWhen);
-                    // HelpFunctions.log.Info(message + ". Reminder shown to the user on thread: " + Thread.CurrentThread.GetHashCode());
-                    // Delete/Move reminder from reminder -> to history table
+                    HelpFunctions.log.Info(message + ". Reminder shown to the user on thread: " + Thread.CurrentThread.GetHashCode());
                     
+                    // TODO: Delete/Move reminder from reminder -> to history table
+                    // remove a reminder when it is finished
                     DbOperations.MoveDataFromRemindersToHistory(reminderId);
                     
                 }
@@ -136,6 +137,7 @@ namespace RawReminder
         #region Execute STOP of all tasks!!
         public void StopAllTasks()
         {
+            Console.WriteLine(WaitTimerList.Count);
             try
             {
                 // If there are no active tasks, then exit this method

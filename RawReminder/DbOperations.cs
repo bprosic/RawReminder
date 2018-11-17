@@ -17,17 +17,18 @@ namespace RawReminder
         static SQLiteConnection DbConnection { get; set; }
         static SQLiteCommand DbCommand { get; set; }
         public static string DbName { get; set; }
-        bool _isEnviromentNewLineActivated { get; set; }
+        static bool _isEnviromentNewLineActivated { get; set; }
 
         public DbOperations()
         {
             DbName = "TaskList.sqlite";
             DbConnection = new SQLiteConnection("Data Source=" + DbName + ";Version=3");
             InitDb();
+
             _isEnviromentNewLineActivated = false;
         }
 
-        string EnviromentNewLineActivated()
+        static string ShowInSingleLine()
         {
             if (_isEnviromentNewLineActivated)
                 return "\n";
@@ -42,11 +43,11 @@ namespace RawReminder
             if (!File.Exists(DbName))
             {
                 if (CreateDb())
-                    Terminal.Write(EnviromentNewLineActivated() + "Db " + DbName + " created.");
+                    Terminal.Write(ShowInSingleLine() + "Db " + DbName + " created.");
             }
             else
-                Terminal.Write(EnviromentNewLineActivated() + "Db " + DbName + " already exists");
-            Terminal.Write(EnviromentNewLineActivated() + "Checking tables ...");
+                Terminal.Write(ShowInSingleLine() + "Db " + DbName + " already exists");
+            Terminal.Write(ShowInSingleLine() + "Checking tables ...");
 
             // Get table names based on classes names.
             var tablesForDb = new string[] { nameof(Reminders), nameof(HistoryReminders) };
@@ -80,7 +81,7 @@ namespace RawReminder
             catch (Exception e)
             {
                 HelpFunctions.log.Info("Err creating database: " + e);
-                Terminal.Write(EnviromentNewLineActivated() + "Err creating DB, see log.");
+                Terminal.Write(ShowInSingleLine() + "Err creating DB, see log.");
                 throw;
             }
             return isDbCreated;
@@ -99,7 +100,7 @@ namespace RawReminder
                 {
                     msg = "Table " + tbl + " consistent.";
                 }
-                Terminal.Write(EnviromentNewLineActivated() + msg);
+                Terminal.Write(ShowInSingleLine() + msg);
             }
         }
         #endregion
@@ -141,7 +142,7 @@ namespace RawReminder
                 query += tblName + "("
                     + rem.GetName(x => x.ReminderId) + " integer PRIMARY KEY AUTOINCREMENT, "
                     + rem.GetName(x => x.ReminderContent) + " text NOT NULL, "
-                    + rem.GetName(x => x.DateToRemind) + " text NOT NULL UNIQUE, "
+                    + rem.GetName(x => x.DateToRemind) + " text NOT NULL, "
                     + rem.GetName(x => x.DateReminderIsSet) + " text, "
                     + rem.GetName(x => x.Notiz) + " text);";
                 msg = "Creating DB Table: " + tblName + "\nQuery:\n" + query;
@@ -160,7 +161,7 @@ namespace RawReminder
             }
 
             if (msg.Length != 0)
-                Terminal.Write(EnviromentNewLineActivated() + "Creating DB table " + tblName + "...");
+                Terminal.Write(ShowInSingleLine() + "Creating DB table " + tblName + "...");
 
             try
             {
@@ -202,7 +203,7 @@ namespace RawReminder
             var getDataFromDb = GetDataRemindersById(whatIdToUpdate).ToList();
             if (getDataFromDb.Count == 0)
             {
-                Terminal.WriteLine("There is no data with id: " + whatIdToUpdate);
+                Terminal.Write(ShowInSingleLine() + "There is no data with id: " + whatIdToUpdate);
                 return;
             }
             // Check if parameters are empty. If empty, then we are going to leave old data
@@ -497,7 +498,7 @@ namespace RawReminder
                     // Is this good method for checking data exsistance?
                     if (checkIfDataExists.Count == 0)
                     {
-                        Terminal.WriteLine("Row id number " + rowId + " doesn't contain data!");
+                        Terminal.Write(ShowInSingleLine() + "Row id number " + rowId + " doesn't contain data!");
                         return;
                     }
 
@@ -507,7 +508,7 @@ namespace RawReminder
                     ctx.DbSetReminders.Attach(dataToDelete);
                     ctx.DbSetReminders.Remove(dataToDelete);
                     ctx.SaveChanges();
-                    Terminal.WriteLine("Reminder Id " + rowId + " deleted!");
+                    Terminal.Write(ShowInSingleLine() + "Reminder Id " + rowId + " deleted!");
                 }
                 catch (Exception e)
                 {

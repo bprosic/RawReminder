@@ -15,7 +15,7 @@ namespace RawReminder
 
             if (result == DialogResult.OK)
             {
-                Terminal.Write("Deleting reminder...");
+                // here I will implement something when user presses ok
             }
 
         }
