@@ -203,11 +203,8 @@ namespace RawReminder
             var reminderExamples = DbOperations.AllRemindersToList();
             foreach (var item in reminderExamples)
             {
-                long diff = 0;
                 if (item.DateToRemind < DateTime.Now)
-                {
                     DbOperations.DeleteReminderById(item.ReminderId);
-                }
             }
         }
         #endregion
