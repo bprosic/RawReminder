@@ -67,7 +67,7 @@ namespace RawReminder
 
             WaitTimer = new WaitableTimer(true, TimeSpan.FromSeconds(diff), 0);
             WaitTimerList.Add(WaitTimer);
-            Console.WriteLine("here: " + dateWhen + " " + message);
+            
             while (!CancelToken.IsCancellationRequested)
             {
                 try
@@ -79,9 +79,11 @@ namespace RawReminder
                     // When time is over, execute that reminder, show reminder to a user: 
 
                     MessageWindow ms = new MessageWindow(message + " => for date: " + dateWhen);
-                    HelpFunctions.log.Info(message + ". Reminder shown to the user on thread: " + Thread.CurrentThread.GetHashCode());
+                    // HelpFunctions.log.Info(message + ". Reminder shown to the user on thread: " + Thread.CurrentThread.GetHashCode());
                     // Delete/Move reminder from reminder -> to history table
+                    
                     DbOperations.MoveDataFromRemindersToHistory(reminderId);
+                    
                 }
                 catch (OperationCanceledException e)
                 {

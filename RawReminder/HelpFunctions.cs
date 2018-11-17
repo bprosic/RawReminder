@@ -74,6 +74,7 @@ namespace RawReminder
     #region Get Propertie Name of a Class
     //
     // Member helper is to get attributes names in a class
+    // Because I can't remember atribute names and I'm lazy ;)
     // 
     public class MemberHelper<T>
     {

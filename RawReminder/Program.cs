@@ -30,7 +30,7 @@ namespace RawReminder
             var msgToUser = string.Empty;
             // show terminal window in specific width and height
             HelpFunctions.SetWindowWidth(120, 41);
-
+            
             if (args == null || args.Length == 0)
             {
                 // Start engine.
@@ -45,6 +45,7 @@ namespace RawReminder
 
                 // this is terminal for user input and control
                 InputFromUser();
+                HelpFunctions.log.Info("Engine started");
             }
             else
             {
