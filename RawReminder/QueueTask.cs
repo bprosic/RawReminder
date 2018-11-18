@@ -74,9 +74,9 @@ namespace RawReminder
                     WaitTimer.WaitOne();
                     // When time is over, execute that reminder, show reminder to a user: 
                     // when scheduling using the same date-time, then two threads want to enter to the same object
-                    // MessageWindow ms = new MessageWindow(message + " => for date: " + dateWhen);
+                    
                     MessageBox.Show(message + " => for date: " + dateWhen);
-
+                    
                     // TODO: Delete/Move reminder from reminder -> to history table
                     // remove a reminder when it is finished
                     DbOperations.MoveDataFromRemindersToHistory(reminderId);
@@ -141,6 +141,7 @@ namespace RawReminder
                     return;
                 // If I want to cancel a task, there is no way until first cancel a timer.
                 // Cancel first the timer
+                Terminal.WriteLine("There are " + WaitTimerList.Count + " reminders to stop...");
                 foreach (var time in WaitTimerList)
                 {
                     time.Cancel();

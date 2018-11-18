@@ -6,6 +6,9 @@ using System.Threading;
 using Terminal = System.Console;
 
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
+using System.Drawing;
+using System.Threading.Tasks;
 
 namespace RawReminder
 {
@@ -15,98 +18,68 @@ namespace RawReminder
         /// version 0e 7.10.2018
         /// </summary>
         /// <param name="args"></param>
+        // thread of main program
+        static Thread _mainThread;
         // thread init EF
-        static Thread threadInitDbInitEF;
+        static Thread _threadInitDbInitEF;
         // thread for reminder tasks
-        static Thread threadControlReminders;
+        static Thread _threadControlReminders;
         static DbOperations db;
         // check if EF init is finished
-        static bool isThreadInitDbFinished { get; set; }
+        static bool _isThreadInitDbFinished { get; set; }
         // qt adding reminders to thread pool
-        static QueueTask qt;
+        static QueueTask _qt;
+        static List<QueueTask> _qtList = new List<QueueTask>();
+
+        #region NOTIFY
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetShellWindow();
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetDesktopWindow();
+        //process
+        public IntPtr Me = default(IntPtr);
+        public static NotifyClass notifier = new NotifyClass();
+        #endregion
 
         static void Main(string[] args)
+        {
+            Task.Factory.StartNew(RunMainProgram);
+            notifier.activateConsole();
+        } // end main
+
+        static void RunMainProgram()
         {
             var msgToUser = string.Empty;
             // show terminal window in specific width and height
             HelpFunctions.SetWindowWidth(120, 41);
-            
-            if (args == null || args.Length == 0)
-            {
-                // Start engine.
-                // This thread checks if db exists, tables and this is also EF initialization thread.
-                threadInitDbInitEF = new Thread(ThreadCheckDb);
-                threadInitDbInitEF.Start();
-                // Thread that loops all data in reminders table and sets tasks to execute reminders.
-                // Also this thread is in function for clearing/cleaning data in reminders table 
-                // when reminders "date to execute" is gone/expired.
-                threadControlReminders = new Thread(ThreadControlReminders);
-                threadControlReminders.Start();
-                // for testing purposes
-                DbOperations.AddDataToReminders(DateTime.Now.AddSeconds(15),"bla","note");
-                DbOperations.AddDataToReminders(DateTime.Now.AddSeconds(15), "bla", "note");
+            // Start engine.
+            // This thread checks if db exists, tables and this is also EF initialization thread.
+            _threadInitDbInitEF = new Thread(ThreadCheckDb);
+            _threadInitDbInitEF.Start();
+            // Thread that loops all data in reminders table and sets tasks to execute reminders.
+            // Also this thread is in function for clearing/cleaning data in reminders table 
+            // when reminders "date to execute" is gone/expired.
+            _threadControlReminders = new Thread(ThreadControlReminders);
+            _threadControlReminders.Start();
+            // for testing purposes
+            DbOperations.AddDataToReminders(DateTime.Now.AddSeconds(15), "bla", "note");
+            DbOperations.AddDataToReminders(DateTime.Now.AddSeconds(15), "bla", "note");
 
-                // this is terminal for user input and control
-                InputFromUser();
-            }
-            else
-            {
-                // This was first version of this program. later I added engine above code and leave this code
-                // this is just crud operation using parameters, but no thread will be working if you run it!
-                // to run: 
-                // reminder.exe -parameter
-
-                // Set all args into array
-                var arg = Array.ConvertAll(args, i => i);
-
-                if (arg.Length == 0)
-                    return;
-
-                if (arg[0].ToLower().Equals("-set"))
-                {
-                    if (arg.Length < 2)
-                    {
-                        Terminal.WriteLine("\nEnter date time ...\n");
-                        return;
-                    }
-                    DateTime dateTime;
-                    if (!DateTime.TryParse(arg[1], out dateTime))
-                    {
-                        Terminal.WriteLine("\nUse correct datetime format: 13:45, 1:45, 21.12.1998 1:45, 21-12-1998 1:43 ... \n");
-                        return;
-                    }
-                    if (arg.Length < 3)
-                    {
-                        Terminal.WriteLine("\nEnter message to remind ... \n");
-                        return;
-                    }
-                    if (string.IsNullOrEmpty(arg[2]) || string.IsNullOrWhiteSpace(arg[2]))
-                    {
-                        Terminal.Write("\nEnter proper reminder message, e.g. \"Empty trash!\"\n");
-                        return;
-                    }
-                    else
-                        msgToUser = "Used parameters: ";
-                    foreach (var c in arg)
-                        msgToUser += c + ",";
-                    Terminal.Write("\nExecuting ..." + msgToUser);
-                    DbOperations.AddDataToReminders(dateTime, arg[2], "Added with args");
-                }
-                else
-                {
-                    Terminal.WriteLine("Use -set parameter!");
-                    return;
-                }
-            } //end else
-        } // end main
+            // this is terminal for user input and control
+            InputFromUser();
+        }
+        
         #region Input from user
-
         static void InputFromUser()
         {
             // FIXME: wait for thread 1 to finish
             while (true)
             {
-                if (isThreadInitDbFinished)
+                if (_isThreadInitDbFinished)
                     break;
             }
             var inputArgs = string.Empty;
@@ -173,7 +146,7 @@ namespace RawReminder
             // Thats why I have put it right here, and false variable is just to not show the result to the user.
             // There are better methods than this, but I couldn't find
             DbOperations.ShowAllReminders(false);
-            isThreadInitDbFinished = true;
+            _isThreadInitDbFinished = true;
         }
         #endregion
 
@@ -185,16 +158,13 @@ namespace RawReminder
             // EF needs to be initialized first.
             while (true)
             {
-                if (isThreadInitDbFinished)
+                if (_isThreadInitDbFinished)
                     break;
             }
             // TODO: first cleanup RemindersTable
             CleanRemindersTable();
             // continue
             StartAllTasks();
-            
-
-
         }
         #endregion
 
@@ -217,24 +187,21 @@ namespace RawReminder
             Terminal.WriteLine("Stopping all threads");
             try
             {
-                try
-                {
-                    if (threadInitDbInitEF != null)
-                        threadInitDbInitEF.Abort();
-                    if (threadControlReminders != null)
-                        threadControlReminders.Abort();
-                }
-                catch (Exception e)
-                {
-                    Terminal.WriteLine("Err aborting thread: " + e);
-                }
-                // notifier.ForceExit();
+                if (_threadInitDbInitEF != null)
+                    _threadInitDbInitEF.Abort();
+                if (_threadControlReminders != null)
+                    _threadControlReminders.Abort();
+                if (_mainThread != null)
+                    _mainThread.Abort();
+                notifier.ForceExit();
+
             }
             catch (Exception e)
             {
-                Terminal.WriteLine("Err in StopAllThreads: " + e);
-                throw;
+                Terminal.WriteLine("Err aborting thread: " + e);
             }
+
+
         }
         #endregion
 
@@ -285,8 +252,8 @@ namespace RawReminder
                 Terminal.Write("If U dont need extra note, just press enter: ");
                 var notes = Terminal.ReadLine();
                 DbOperations.AddDataToReminders(dateToRemind, textToRemind, notes);
-                RestartAllTasks();
-                Terminal.WriteLine("New Reminder is set:\n" + textToRemind + "\nfor date: " + dateToRemind);
+                RestartAllTasks(false);
+                //Terminal.WriteLine("New Reminder is set:\n" + textToRemind + "\nfor date: " + dateToRemind);
                 Terminal.WriteLine("Data inserted into DB Reminders tbl");
             }
         }
@@ -302,21 +269,27 @@ namespace RawReminder
             {
                 foreach (var item in reminderExamples)
                 {
-                    qt = new QueueTask();
-                    qt.Produce(item.DateToRemind, item.ReminderContent, item.ReminderId);
+                    _qt = new QueueTask();
+                    _qt.Produce(item.DateToRemind, item.ReminderContent, item.ReminderId);
+                    _qtList.Add(_qt);
                 }
             }
         }
         #endregion
 
         #region Restart all tasks in threadpool
-        static void RestartAllTasks()
+        public static void RestartAllTasks(bool justStopTasks)
         {
-            if (qt != null)
-                qt.StopAllTasks();
-
+            if (_qt != null)
+            {
+                foreach (var item in _qtList)
+                {
+                    item.StopAllTasks();
+                }
+            }
             Thread.Sleep(100);
-            StartAllTasks();
+            if (!justStopTasks)
+                StartAllTasks();
         }
         #endregion
 

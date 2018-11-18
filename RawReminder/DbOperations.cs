@@ -533,8 +533,7 @@ namespace RawReminder
                     Terminal.WriteLine("Err while deleteing all reminders: " + e);
                     throw;
                 }
-
-
+                Program.RestartAllTasks(true);
             }
         }
         #endregion
