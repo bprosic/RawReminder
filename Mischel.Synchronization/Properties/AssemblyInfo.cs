@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("RawReminder")]
+[assembly: AssemblyTitle("Mischel.Synchronization")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("RawReminder")]
+[assembly: AssemblyProduct("Mischel.Synchronization")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("7ea70ccd-bf08-4a7d-bd86-bc4e5b2c2b13")]
+[assembly: Guid("8d511c29-f978-4592-b9fc-e1e7af18fb9f")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -45,7 +45,6 @@ namespace RawReminder
 
                 // this is terminal for user input and control
                 InputFromUser();
-                HelpFunctions.log.Info("Engine started");
             }
             else
             {
@@ -224,13 +223,13 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("Err aborting thread: " + e);
+                    Terminal.WriteLine("Err aborting thread: " + e);
                 }
                 // notifier.ForceExit();
             }
             catch (Exception e)
             {
-                HelpFunctions.log.Info("Err in StopAllThreads: " + e);
+                Terminal.WriteLine("Err in StopAllThreads: " + e);
                 throw;
             }
         }

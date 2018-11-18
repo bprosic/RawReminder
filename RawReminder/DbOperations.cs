@@ -59,7 +59,7 @@ namespace RawReminder
             }
             catch (Exception e)
             {
-                HelpFunctions.log.Info("Error in InitDB(): " + e);
+                Terminal.WriteLine("Error in InitDB(): " + e);
                 throw;
             }
             finally
@@ -80,8 +80,7 @@ namespace RawReminder
             }
             catch (Exception e)
             {
-                HelpFunctions.log.Info("Err creating database: " + e);
-                Terminal.Write(ShowInSingleLine() + "Err creating DB, see log.");
+                Terminal.Write(ShowInSingleLine() + "Err creating DB: " + e);
                 throw;
             }
             return isDbCreated;
@@ -121,7 +120,7 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("Err (isTableCreated) checking table exists: " + e);
+                    Terminal.WriteLine("Err (isTableCreated) checking table exists: " + e);
                     throw;
                 }
             }
@@ -146,7 +145,7 @@ namespace RawReminder
                     + rem.GetName(x => x.DateReminderIsSet) + " text, "
                     + rem.GetName(x => x.Notiz) + " text);";
                 msg = "Creating DB Table: " + tblName + "\nQuery:\n" + query;
-                HelpFunctions.log.Info(msg);
+                Terminal.WriteLine(msg);
             }
             else if (tblName.Equals("HistoryReminders"))
             {
@@ -157,7 +156,7 @@ namespace RawReminder
                     + rem.GetName(x => x.ReminderHistoryContent) + " text NOT NULL, "
                     + rem.GetName(x => x.DateReminderExecuted) + " text);";
                 msg = "Creating DB Table: " + tblName + "\nQuery:\n" + query;
-                HelpFunctions.log.Info(msg);
+                Terminal.WriteLine(msg);
             }
 
             if (msg.Length != 0)
@@ -187,7 +186,7 @@ namespace RawReminder
             }
             catch (Exception e)
             {
-                HelpFunctions.log.Info("ERR creating table: " + e);
+                Terminal.WriteLine("ERR creating table: " + e);
                 throw;
             }
             return a;
@@ -213,10 +212,10 @@ namespace RawReminder
             {
                 var isDateInGoodFormat = DateTime.TryParse(dateWhenToRemind, out dateToRmnd);
                 if (isDateInGoodFormat)
-                    HelpFunctions.log.Info("Update of date and time to DB => " + dateToRmnd);
+                    Terminal.WriteLine("Update of date and time to DB => " + dateToRmnd);
                 else
                 {
-                    HelpFunctions.log.Info("Date time was in wrong format, we will leave old date.");
+                    Terminal.WriteLine("Date time was in wrong format, we will leave old date.");
                     dateToRmnd = Convert.ToDateTime(getDataFromDb.Select(x => x.DateToRemind).FirstOrDefault().ToString());
                 }
             }
@@ -227,18 +226,18 @@ namespace RawReminder
             if (string.IsNullOrEmpty(msgToRemind) && string.IsNullOrWhiteSpace(msgToRemind))
             {
                 msgToRemind = getDataFromDb.Select(x => x.ReminderContent).FirstOrDefault().ToString();
-                HelpFunctions.log.Info("Reminder content is not changed. We are leaving old information => " + msgToRemind);
+                Terminal.WriteLine("Reminder content is not changed. We are leaving old information => " + msgToRemind);
             }
             // the same is for extra notes field
             if (string.IsNullOrEmpty(extraNotes) && string.IsNullOrWhiteSpace(extraNotes))
             {
                 extraNotes = getDataFromDb.Select(x => x.Notiz).FirstOrDefault().ToString();
-                HelpFunctions.log.Info("Reminder notes are not changed. We are leaving old information => " + extraNotes);
+                Terminal.WriteLine("Reminder notes are not changed. We are leaving old information => " + extraNotes);
             }
 
             var msg = "\nNew info is updated for rowID " + whatIdToUpdate + "\nReminder Id = " +
                 whatIdToUpdate + "\nReminder content = " + msgToRemind + "\nDate when to remind = " + dateToRmnd + "\nReminder notes = " + extraNotes;
-            HelpFunctions.log.Info(msg);
+            Terminal.WriteLine(msg);
             // bind new data to class members
             var rm = new Reminders
             {
@@ -267,7 +266,7 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("ERR in UpdateDataToReminders: " + e);
+                    Terminal.WriteLine("ERR in UpdateDataToReminders: " + e);
                     throw;
                 }
             }
@@ -300,7 +299,7 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("Err moving data from table reminder -> history reminders");
+                    Terminal.WriteLine("Err moving data from table reminder -> history reminders");
                     throw;
                 }
             }
@@ -337,10 +336,9 @@ namespace RawReminder
                     cntx.SaveChanges();
                     isDataAdded = true;
                 }
-                catch (Exception ee)
+                catch (Exception ex)
                 {
-                    var msg = "ERR saving information: " + ee;
-                    HelpFunctions.log.Info(msg);
+                    Terminal.WriteLine("ERR saving information: " + ex);
                     throw;
                 }
             }
@@ -363,7 +361,7 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("Err in GetDataRemindersById: " + e);
+                    Terminal.WriteLine("Err in GetDataRemindersById: " + e);
                     throw;
                 }
 
@@ -385,7 +383,7 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("Err in GetDataHistoryRemindersById: " + e);
+                    Terminal.WriteLine("Err in GetDataHistoryRemindersById: " + e);
                     throw;
                 }
             }
@@ -407,7 +405,7 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("ERR in ShowAllReminders: " + e);
+                    Terminal.WriteLine("ERR in ShowAllReminders: " + e);
                     throw;
                 }
             }
@@ -429,7 +427,7 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("ERR in ShowAllReminders: " + e);
+                    Terminal.WriteLine("ERR in ShowAllReminders: " + e);
                     throw;
                 }
             }
@@ -447,7 +445,7 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("ERR in ShowAllReminders: " + e);
+                    Terminal.WriteLine("ERR in ShowAllReminders: " + e);
                     throw;
                 }
             }
@@ -469,7 +467,7 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("ERR in ShowAllHistoryReminders: " + e);
+                    Terminal.WriteLine("Err in ShowAllHistoryReminders: " + e);
                     throw;
                 }
             }
@@ -512,7 +510,7 @@ namespace RawReminder
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("Err in DeleteReminderById: " + e);
+                    Terminal.WriteLine("Err in DeleteReminderById: " + e);
                     throw;
                 }
 
@@ -527,12 +525,12 @@ namespace RawReminder
                     using (var ctx = new RemindersContext())
                     {
                         ctx.Database.ExecuteSqlCommand("DELETE FROM [" + nameof(Reminders) + "]");
-                        HelpFunctions.log.Info("All reminders deleted!");
+                        Terminal.WriteLine("All reminders deleted!");
                     }
                 }
                 catch (Exception e)
                 {
-                    HelpFunctions.log.Info("Err while deleteing all reminders: " + e);
+                    Terminal.WriteLine("Err while deleteing all reminders: " + e);
                     throw;
                 }
 

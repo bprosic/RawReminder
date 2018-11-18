@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Mischel.Synchronization;
+using Terminal = System.Console;
 namespace RawReminder
 {
     /// <summary>
@@ -19,7 +18,6 @@ namespace RawReminder
         public Task ExecutionTask = null;
         // I will put all tasks in a list
         public List<Task> TaskList;
-
         // for better control of time when reminder will be executed
         public WaitableTimer WaitTimer = null;
         // I will put all the times into 
@@ -61,10 +59,6 @@ namespace RawReminder
             if (dateWhen > DateTime.Now)
                 diff = Convert.ToInt64((dateWhen - DateTime.Now).TotalSeconds);
             // using Waitable Timer class from Jim Mischel
-
-            // https://stackoverflow.com/questions/18611226/c-how-to-start-a-thread-at-a-specific-time		
-            // http://www.mischel.com/pubs/waitabletimer.zip
-
             WaitTimer = new WaitableTimer(true, TimeSpan.FromSeconds(diff), 0);
             WaitTimerList.Add(WaitTimer);
             
@@ -73,13 +67,13 @@ namespace RawReminder
                 try
                 {
                     if (CancelToken.IsCancellationRequested)
-                        HelpFunctions.log.Info("Cancel requested");
+                        Console.Write("Cancel requested");
+                    
                     // timer here is waiting ...
                     WaitTimer.WaitOne();
                     // When time is over, execute that reminder, show reminder to a user: 
-
-                    MessageWindow ms = new MessageWindow(message + " => for date: " + dateWhen);
-                    HelpFunctions.log.Info(message + ". Reminder shown to the user on thread: " + Thread.CurrentThread.GetHashCode());
+                    // when scheduling using the same date-time, then two threads want to enter to the same object
+                        MessageWindow ms = new MessageWindow(message + " => for date: " + dateWhen);
                     
                     // TODO: Delete/Move reminder from reminder -> to history table
                     // remove a reminder when it is finished
@@ -89,7 +83,7 @@ namespace RawReminder
                 catch (OperationCanceledException e)
                 {
                     // I will supress exception because a lot of errors are shown in console..
-                    HelpFunctions.log.Info(e);
+                    Terminal.WriteLine(e);
                     // break;
                 }
                 finally

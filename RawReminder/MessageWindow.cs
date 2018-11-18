@@ -9,14 +9,14 @@ namespace RawReminder
     class MessageWindow
     {
         public string receiveMessage { get; set; }
+
         public MessageWindow(string message)
         {
-            DialogResult result = MsgBox.Show(message, "Reminder", MsgBox.Buttons.OK, MsgBox.Icon.Info, MsgBox.AnimateStyle.FadeIn);
-
-            if (result == DialogResult.OK)
-            {
-                // here I will implement something when user presses ok
-            }
+                DialogResult result = MsgBox.Show(message, "Reminder", MsgBox.Buttons.OK, MsgBox.Icon.Info, MsgBox.AnimateStyle.FadeIn);
+                if (result == DialogResult.OK)
+                {
+                    // here I will implement something when user presses ok
+                }
 
         }
     }

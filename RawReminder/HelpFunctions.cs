@@ -16,9 +16,6 @@ namespace RawReminder
         public HelpFunctions()
         {
         }
-        #region Logger - log4net. Is this good technique - global var?
-        public static readonly log4net.ILog log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        #endregion
 
         #region Determine Window Console Width
         public static int WindowWidth { get; set; }

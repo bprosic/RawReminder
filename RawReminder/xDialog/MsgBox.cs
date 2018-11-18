@@ -10,7 +10,6 @@ using System.Windows.Forms;
 namespace xDialog
 {
     // https://www.codeproject.com/Articles/17253/A-Custom-Message-Box
-    // removed what i dont need
 
     partial class MsgBox : Form
     {
@@ -23,10 +22,9 @@ namespace xDialog
         FlowLayoutPanel FlowLayoutPanel = new FlowLayoutPanel();
         Label LblTitle;
         Label LblMessage;
-        List<Button> ButtonCollection = new List<Button>();
+        List<Button> ButtonCollection;
         static DialogResult ButtonResult = new DialogResult();
         static Timer SomeTimer;
-
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         static extern bool MessageBeep(uint type);
 
@@ -41,7 +39,7 @@ namespace xDialog
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Padding = new Padding(3);
             this.Width = 400;
-            
+            ButtonCollection = new List<Button>();
 
             LblTitle = new Label();
             LblTitle.ForeColor = Color.White;
@@ -117,8 +115,6 @@ namespace xDialog
             isMouseDown = false;
         }
 
-
-
         public static void Show(string message, string title)
         {
             MsgBoxx = new MsgBox();
@@ -161,45 +157,45 @@ namespace xDialog
 
         public static DialogResult Show(string message, string title, Buttons buttons, Icon icon, AnimateStyle style)
         {
-            MsgBoxx = new MsgBox();
-            MsgBoxx.LblMessage.Text = message;
-            MsgBoxx.LblTitle.Text = title;
-            MsgBoxx.Height = 0;
+                MsgBoxx = new MsgBox();
+                MsgBoxx.LblMessage.Text = message;
+                MsgBoxx.LblTitle.Text = title;
+                MsgBoxx.Height = 0;
 
-            MsgBox.InitButtons(buttons);
-            MsgBox.InitIcon(icon);
+                MsgBox.InitButtons(buttons);
+                MsgBox.InitIcon(icon);
 
-            SomeTimer = new Timer();
-            Size formSize = MsgBox.MessageSize(message);
+                SomeTimer = new Timer();
+                Size formSize = MsgBox.MessageSize(message);
 
-            switch (style)
-            {
-                case MsgBox.AnimateStyle.SlideDown:
-                    MsgBoxx.Size = new Size(formSize.Width, 0);
-                    SomeTimer.Interval = 1;
-                    SomeTimer.Tag = new AnimateMsgBox(formSize, style);
-                    break;
+                switch (style)
+                {
+                    case MsgBox.AnimateStyle.SlideDown:
+                        MsgBoxx.Size = new Size(formSize.Width, 0);
+                        SomeTimer.Interval = 1;
+                        SomeTimer.Tag = new AnimateMsgBox(formSize, style);
+                        break;
 
-                case MsgBox.AnimateStyle.FadeIn:
-                    MsgBoxx.Size = formSize;
-                    MsgBoxx.Opacity = 0;
-                    SomeTimer.Interval = 20;
-                    SomeTimer.Tag = new AnimateMsgBox(formSize, style);
-                    break;
+                    case MsgBox.AnimateStyle.FadeIn:
+                        MsgBoxx.Size = formSize;
+                        MsgBoxx.Opacity = 0;
+                        SomeTimer.Interval = 20;
+                        SomeTimer.Tag = new AnimateMsgBox(formSize, style);
+                        break;
 
-                case MsgBox.AnimateStyle.ZoomIn:
-                    MsgBoxx.Size = new Size(formSize.Width + 100, formSize.Height + 100);
-                    SomeTimer.Tag = new AnimateMsgBox(formSize, style);
-                    SomeTimer.Interval = 1;
-                    break;
-            }
+                    case MsgBox.AnimateStyle.ZoomIn:
+                        MsgBoxx.Size = new Size(formSize.Width + 100, formSize.Height + 100);
+                        SomeTimer.Tag = new AnimateMsgBox(formSize, style);
+                        SomeTimer.Interval = 1;
+                        break;
+                }
 
-            SomeTimer.Tick += timer_Tick;
-            SomeTimer.Start();
+                SomeTimer.Tick += timer_Tick;
+                SomeTimer.Start();
 
-            MsgBoxx.ShowDialog();
-            MessageBeep(0);
-            return ButtonResult;
+                MsgBoxx.ShowDialog();
+                MessageBeep(0);
+                return ButtonResult;
         }
 
         static void timer_Tick(object sender, EventArgs e)
@@ -278,18 +274,26 @@ namespace xDialog
                     MsgBoxx.InitYesNoCancelButtons();
                     break;
             }
-
-            foreach (Button btn in MsgBoxx.ButtonCollection)
+            try
             {
-                btn.ForeColor = Color.FromArgb(170, 170, 170);
-                btn.Font = new System.Drawing.Font("Segoe UI", 8);
-                btn.Padding = new Padding(3);
-                btn.FlatStyle = FlatStyle.Flat;
-                btn.Height = 30;
-                btn.FlatAppearance.BorderColor = Color.FromArgb(99, 99, 98);
+                foreach (Button btn in MsgBoxx.ButtonCollection)
+                {
+                    btn.ForeColor = Color.FromArgb(170, 170, 170);
+                    btn.Font = new System.Drawing.Font("Segoe UI", 8);
+                    btn.Padding = new Padding(3);
+                    btn.FlatStyle = FlatStyle.Flat;
+                    btn.Height = 30;
+                    btn.FlatAppearance.BorderColor = Color.FromArgb(99, 99, 98);
 
-                MsgBoxx.FlowLayoutPanel.Controls.Add(btn);
+                    MsgBoxx.FlowLayoutPanel.Controls.Add(btn);
+                }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+           
         }
 
         private static void InitIcon(Icon icon)
