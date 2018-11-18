@@ -42,6 +42,9 @@ namespace RawReminder
                 // when reminders "date to execute" is gone/expired.
                 threadControlReminders = new Thread(ThreadControlReminders);
                 threadControlReminders.Start();
+                // for testing purposes
+                DbOperations.AddDataToReminders(DateTime.Now.AddSeconds(15),"bla","note");
+                DbOperations.AddDataToReminders(DateTime.Now.AddSeconds(15), "bla", "note");
 
                 // this is terminal for user input and control
                 InputFromUser();

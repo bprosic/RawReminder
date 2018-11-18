@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Mischel.Synchronization;
 using Terminal = System.Console;
+using System.Windows.Forms;
 namespace RawReminder
 {
     /// <summary>
@@ -44,7 +45,7 @@ namespace RawReminder
             //ExecutionTask = Task.Factory.StartNew(() => RunSched(reminder), CancelToken);
             ExecutionTask = Task.Factory.StartNew(() => RunSched(dateWhen, message, reminderId), CancelToken);
             IsTaskAborted = false;
-            
+
         }
         #endregion
 
@@ -61,24 +62,25 @@ namespace RawReminder
             // using Waitable Timer class from Jim Mischel
             WaitTimer = new WaitableTimer(true, TimeSpan.FromSeconds(diff), 0);
             WaitTimerList.Add(WaitTimer);
-            
+
             while (!CancelToken.IsCancellationRequested)
             {
                 try
                 {
                     if (CancelToken.IsCancellationRequested)
                         Console.Write("Cancel requested");
-                    
+
                     // timer here is waiting ...
                     WaitTimer.WaitOne();
                     // When time is over, execute that reminder, show reminder to a user: 
                     // when scheduling using the same date-time, then two threads want to enter to the same object
-                        MessageWindow ms = new MessageWindow(message + " => for date: " + dateWhen);
-                    
+                    // MessageWindow ms = new MessageWindow(message + " => for date: " + dateWhen);
+                    MessageBox.Show(message + " => for date: " + dateWhen);
+
                     // TODO: Delete/Move reminder from reminder -> to history table
                     // remove a reminder when it is finished
                     DbOperations.MoveDataFromRemindersToHistory(reminderId);
-                    
+
                 }
                 catch (OperationCanceledException e)
                 {
@@ -92,7 +94,7 @@ namespace RawReminder
                     DisposeTask(true);
                 }
             }
-        } 
+        }
         #endregion
 
         #region Dispose current task

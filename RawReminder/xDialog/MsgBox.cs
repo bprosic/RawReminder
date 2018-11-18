@@ -460,6 +460,11 @@ namespace xDialog
             MsgBoxx.Dispose();
         }
 
+        public static void ForceDispose()
+        {
+            MsgBox.ForceDispose();
+        }
+
         private static Size MessageSize(string message)
         {
             Graphics g = MsgBoxx.CreateGraphics();
